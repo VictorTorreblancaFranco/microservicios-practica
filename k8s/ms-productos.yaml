@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-productos
+  labels:
+    app: ms-productos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-productos
+  template:
+    metadata:
+      labels:
+        app: ms-productos
+    spec:
+      containers:
+        - name: ms-productos
+          image: victortorreblancafranco/ms-productos:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SERVER_PORT
+              value: "8081"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: neon-secrets
+                  key: productos-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-productos
+  labels:
+    app: ms-productos
+spec:
+  type: ClusterIP
+  selector:
+    app: ms-productos
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081

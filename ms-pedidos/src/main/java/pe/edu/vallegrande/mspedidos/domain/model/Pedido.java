@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Pedido {
     @Id
     private Long id;
-    private String productId;
+    private Long productId;
     private Integer quantity;
     private Double total;
     private Double price;

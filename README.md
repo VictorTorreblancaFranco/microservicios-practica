@@ -9,3 +9,11 @@ Las contrasenas no se suben al repositorio. Ejecuta cada microservicio definiend
 
 - `ms-productos`: usa `db_productos`
 - `ms-pedidos`: usa `db_pedidos`
+
+## Entrega S16
+
+- Informe: `INFORME.md`
+- Manifiestos Kubernetes: `k8s/`
+- Scripts SQL: `sql/`
+- Dockerfile de productos: `ms-productos/Dockerfile`
+- Dockerfile de pedidos: `ms-pedidos/Dockerfile`

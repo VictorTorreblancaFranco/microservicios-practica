@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-pedidos
+  labels:
+    app: ms-pedidos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ms-pedidos
+  template:
+    metadata:
+      labels:
+        app: ms-pedidos
+    spec:
+      containers:
+        - name: ms-pedidos
+          image: victortorreblancafranco/ms-pedidos:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SERVER_PORT
+              value: "8082"
+            - name: PRODUCTOS_SERVICE_URL
+              value: "http://ms-productos:8081"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: neon-secrets
+                  key: pedidos-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-pedidos
+  labels:
+    app: ms-pedidos
+spec:
+  type: LoadBalancer
+  selector:
+    app: ms-pedidos
+  ports:
+    - name: http
+      port: 8082
+      targetPort: 8082

@@ -10,8 +10,8 @@ spring:
     username: ${DB_USER:neondb_owner}
     password: ${DB_PASSWORD}
 
-  servicios:
-    productos-url: ${PRODUCTOS_SERVICE_URL:http://localhost:8081}
+servicios:
+  productos-url: ${PRODUCTOS_SERVICE_URL:http://localhost:8081}
 
 management:
   endpoints:
