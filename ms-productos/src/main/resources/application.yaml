@@ -1,0 +1,11 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: ms-productos
+
+  r2dbc:
+     url: r2dbc:postgresql://${DB_HOST:ep-red-glade-atb3c2si-pooler.c-9.us-east-1.aws.neon.tech}:${DB_PORT:5432}/${DB_NAME:db_productos}?sslMode=${DB_SSL_MODE:require}
+     username: ${DB_USER:neondb_owner}
+     password: ${DB_PASSWORD}
