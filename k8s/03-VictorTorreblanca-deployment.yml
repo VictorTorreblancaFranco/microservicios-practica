@@ -1,0 +1,147 @@
+# DEPLOYMENT
+# Mantiene el estado deseado de los pods. Si un pod se cae, Kubernetes crea otro.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: victortorreblanca-productos
+  namespace: victortorreblanca
+  labels:
+    app: victortorreblanca-productos
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: victortorreblanca-productos
+  template:
+    metadata:
+      labels:
+        app: victortorreblanca-productos
+    spec:
+      containers:
+        - name: ms-productos
+          image: victortorreblancafranco/ms-productos:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          env:
+            - name: APP_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: APP_ENV
+            - name: APP_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: APP_VERSION
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PRODUCTOS_SERVER_PORT
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PRODUCTOS_DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PRODUCTOS_DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PRODUCTOS_DB_NAME
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PRODUCTOS_DB_USER
+            - name: DB_SSL_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PRODUCTOS_DB_SSL_MODE
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: victortorreblanca-secret
+                  key: productos-password
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: victortorreblanca-pedidos
+  namespace: victortorreblanca
+  labels:
+    app: victortorreblanca-pedidos
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: victortorreblanca-pedidos
+  template:
+    metadata:
+      labels:
+        app: victortorreblanca-pedidos
+    spec:
+      containers:
+        - name: ms-pedidos
+          image: victortorreblancafranco/ms-pedidos:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+          env:
+            - name: APP_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: APP_ENV
+            - name: APP_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: APP_VERSION
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PEDIDOS_SERVER_PORT
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PEDIDOS_DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PEDIDOS_DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PEDIDOS_DB_NAME
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PEDIDOS_DB_USER
+            - name: DB_SSL_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PEDIDOS_DB_SSL_MODE
+            - name: PRODUCTOS_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: victortorreblanca-config
+                  key: PRODUCTOS_SERVICE_URL
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: victortorreblanca-secret
+                  key: pedidos-password

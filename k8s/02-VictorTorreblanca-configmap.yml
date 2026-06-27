@@ -1,0 +1,29 @@
+# CONFIGMAP
+# Almacena configuraciones no sensibles en pares clave-valor.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: victortorreblanca-config
+  namespace: victortorreblanca
+  labels:
+    app: microservicios-practica
+data:
+  APP_ENV: "produccion"
+  APP_VERSION: "1.0.0"
+
+  PRODUCTOS_SERVER_PORT: "8081"
+  PRODUCTOS_DB_HOST: "ep-red-glade-atb3c2si-pooler.c-9.us-east-1.aws.neon.tech"
+  PRODUCTOS_DB_PORT: "5432"
+  PRODUCTOS_DB_NAME: "db_productos"
+  PRODUCTOS_DB_USER: "neondb_owner"
+  PRODUCTOS_DB_SSL_MODE: "require"
+
+  PEDIDOS_SERVER_PORT: "8082"
+  PEDIDOS_DB_HOST: "ep-icy-union-aticzgg0-pooler.c-9.us-east-1.aws.neon.tech"
+  PEDIDOS_DB_PORT: "5432"
+  PEDIDOS_DB_NAME: "db_pedidos"
+  PEDIDOS_DB_USER: "neondb_owner"
+  PEDIDOS_DB_SSL_MODE: "require"
+
+  PRODUCTOS_SERVICE_URL: "http://victortorreblanca-productos-service:8081"

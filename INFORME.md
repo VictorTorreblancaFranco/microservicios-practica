@@ -7,7 +7,7 @@ Numero: 40
 
 En la actividad se utilizaron microservicios con Spring Boot WebFlux, programacion reactiva con Reactor, comunicacion HTTP con WebClient, persistencia reactiva con R2DBC PostgreSQL, contenedores Docker y despliegue en Kubernetes mediante manifiestos YAML.
 
-Kubernetes permite ejecutar cada microservicio como un Deployment y exponerlo mediante Services. `ms-productos` se expone internamente con ClusterIP y `ms-pedidos` se expone mediante LoadBalancer para recibir las pruebas externas. La comunicacion interna usa el DNS del Service: `http://ms-productos:8081`.
+Kubernetes permite ejecutar cada microservicio como un Deployment y exponerlo mediante Services. Para mantener el formato trabajado en clase, se usa un namespace del proyecto, un Secret, un ConfigMap y archivos separados para Deployments y Services. La comunicacion interna usa el DNS del Service: `http://victortorreblanca-productos-service:8081`.
 
 ## 2. Microservicios desarrollados
 
@@ -124,56 +124,73 @@ docker save victortorreblancafranco/ms-pedidos:latest -o ms-pedidos.tar
 
 Los manifiestos estan en la carpeta `k8s`.
 
-Crear Secret con las claves de Neon:
+Archivos utilizados:
+
+- `00-VictorTorreblanca-namespace.yml`: namespace del proyecto.
+- `01-VictorTorreblanca-secret.yml`: passwords de Neon en base64.
+- `02-VictorTorreblanca-configmap.yml`: variables no sensibles.
+- `03-VictorTorreblanca-deployment.yml`: deployments de `ms-productos` y `ms-pedidos`.
+- `04-VictorTorreblanca-service.yml`: services NodePort para ambos microservicios.
+
+Antes de aplicar el Secret, generar los valores en base64:
 
 ```bash
-kubectl create secret generic neon-secrets \
-  --from-literal=productos-password='PASSWORD_DB_PRODUCTOS' \
-  --from-literal=pedidos-password='PASSWORD_DB_PEDIDOS'
+echo -n "PASSWORD_DB_PRODUCTOS" | base64
+echo -n "PASSWORD_DB_PEDIDOS" | base64
 ```
+
+Luego reemplazar los valores de `productos-password` y `pedidos-password` en `01-VictorTorreblanca-secret.yml`.
 
 Aplicar manifiestos:
 
 ```bash
-kubectl apply -f k8s/ms-productos.yaml
-kubectl apply -f k8s/ms-pedidos.yaml
+kubectl apply -f k8s/00-VictorTorreblanca-namespace.yml
+kubectl apply -f k8s/01-VictorTorreblanca-secret.yml
+kubectl apply -f k8s/02-VictorTorreblanca-configmap.yml
+kubectl apply -f k8s/03-VictorTorreblanca-deployment.yml
+kubectl apply -f k8s/04-VictorTorreblanca-service.yml
 ```
 
 Verificar recursos:
 
 ```bash
-kubectl get deployments
-kubectl get services
-kubectl get pods
-kubectl describe deployment ms-productos
-kubectl describe deployment ms-pedidos
+kubectl get namespaces
+kubectl describe namespace victortorreblanca
+kubectl get secrets -n victortorreblanca
+kubectl describe secret victortorreblanca-secret -n victortorreblanca
+kubectl get configmaps -n victortorreblanca
+kubectl describe configmap victortorreblanca-config -n victortorreblanca
+kubectl get deployments -n victortorreblanca
+kubectl get pods -n victortorreblanca -o wide
+kubectl get services -n victortorreblanca
+kubectl get all -n victortorreblanca
 ```
 
 Ver logs:
 
 ```bash
-kubectl logs deployment/ms-productos
-kubectl logs deployment/ms-pedidos
+kubectl logs deployment/victortorreblanca-productos -n victortorreblanca
+kubectl logs deployment/victortorreblanca-pedidos -n victortorreblanca
 ```
 
-Probar con port-forward si no hay LoadBalancer externo:
+Los Services estan configurados como NodePort para poder probarlos desde la maquina local. Tambien se puede usar port-forward:
 
 ```bash
-kubectl port-forward service/ms-productos 8081:8081
-kubectl port-forward service/ms-pedidos 8082:8082
+kubectl port-forward service/victortorreblanca-productos-service 9081:8081 -n victortorreblanca
+kubectl port-forward service/victortorreblanca-pedidos-service 9082:8082 -n victortorreblanca
 ```
 
 Pruebas con Kubernetes:
 
 ```bash
-curl http://localhost:8081/api/productos
-curl http://localhost:8082/api/pedidos
+curl http://localhost:9081/api/productos
+curl http://localhost:9082/api/pedidos
 ```
 
 Crear producto en Kubernetes:
 
 ```bash
-curl -X POST http://localhost:8081/api/productos \
+curl -X POST http://localhost:9081/api/productos \
   -H 'Content-Type: application/json' \
   -d '{"name":"Mouse","price":80.0,"stock":20}'
 ```
@@ -181,7 +198,7 @@ curl -X POST http://localhost:8081/api/productos \
 Crear pedido en Kubernetes:
 
 ```bash
-curl -X POST http://localhost:8082/api/pedidos \
+curl -X POST http://localhost:9082/api/pedidos \
   -H 'Content-Type: application/json' \
   -d '{"productId":1,"quantity":3}'
 ```
@@ -193,13 +210,13 @@ Se demuestra el uso de puertos diferentes mediante la variable `SERVER_PORT`:
 - `ms-productos`: `SERVER_PORT=8081`
 - `ms-pedidos`: `SERVER_PORT=8082`
 
-En Kubernetes esos valores estan configurados como variables de entorno dentro de cada Deployment.
+En Kubernetes esos valores estan configurados como variables de entorno dentro de cada Deployment y se obtienen desde `02-VictorTorreblanca-configmap.yml`.
 
 ## 7. Conclusiones
 
 Se completo la comunicacion entre microservicios usando WebClient. `ms-pedidos` consume el servicio `ms-productos` para validar el producto y disminuir stock antes de registrar un pedido.
 
-El despliegue con Kubernetes separa responsabilidades mediante Deployments y Services. El Service interno de productos permite comunicacion dentro del cluster, mientras que pedidos se expone para pruebas externas.
+El despliegue con Kubernetes separa responsabilidades mediante Namespace, Secret, ConfigMap, Deployments y Services. El Service de productos permite comunicacion dentro del cluster, mientras que ambos NodePort permiten pruebas desde fuera del cluster o mediante port-forward.
 
 Docker permite empaquetar cada microservicio de forma independiente y publicarlo en Docker Hub o exportarlo como archivo `.tar`.
 

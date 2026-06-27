@@ -1,0 +1,11 @@
+# NAMESPACE
+# Lugar de trabajo aislado dentro del cluster de Kubernetes.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: victortorreblanca
+  labels:
+    environment: clase
+    managed-by: kubectl
+    curso: kubernetes-basico
+    alumno: victor-torreblanca
