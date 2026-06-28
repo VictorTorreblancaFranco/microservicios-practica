@@ -96,28 +96,28 @@ curl http://localhost:8081/api/productos/1
 Construir imagen de productos:
 
 ```bash
-docker build -t victortorreblancafranco/ms-productos:latest ./ms-productos
+docker build -t victor2202/ms-productos:latest ./ms-productos
 ```
 
 Construir imagen de pedidos:
 
 ```bash
-docker build -t victortorreblancafranco/ms-pedidos:latest ./ms-pedidos
+docker build -t victor2202/ms-pedidos:latest ./ms-pedidos
 ```
 
 Publicar en Docker Hub:
 
 ```bash
 docker login
-docker push victortorreblancafranco/ms-productos:latest
-docker push victortorreblancafranco/ms-pedidos:latest
+docker push victor2202/ms-productos:latest
+docker push victor2202/ms-pedidos:latest
 ```
 
 Alternativa exportada:
 
 ```bash
-docker save victortorreblancafranco/ms-productos:latest -o ms-productos.tar
-docker save victortorreblancafranco/ms-pedidos:latest -o ms-pedidos.tar
+docker save victor2202/ms-productos:latest -o ms-productos.tar
+docker save victor2202/ms-pedidos:latest -o ms-pedidos.tar
 ```
 
 ## 5. Kubernetes

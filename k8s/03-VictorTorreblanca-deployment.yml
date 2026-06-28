@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: ms-productos
-          image: victortorreblancafranco/ms-productos:latest
+          image: victor2202/ms-productos:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
@@ -90,7 +90,7 @@ spec:
     spec:
       containers:
         - name: ms-pedidos
-          image: victortorreblancafranco/ms-pedidos:latest
+          image: victor2202/ms-pedidos:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8082
