@@ -132,20 +132,20 @@ Archivos utilizados:
 - `03-VictorTorreblanca-deployment.yml`: deployments de `ms-productos` y `ms-pedidos`.
 - `04-VictorTorreblanca-service.yml`: services NodePort para ambos microservicios.
 
-Antes de aplicar el Secret, generar los valores en base64:
+Para la entrega se mantiene el manifiesto de Secret sin contrasenas reales en el repositorio. Durante la demostracion se puede crear el Secret real directamente con `kubectl`, usando las credenciales de Neon como valores literales:
 
 ```bash
-echo -n "PASSWORD_DB_PRODUCTOS" | base64
-echo -n "PASSWORD_DB_PEDIDOS" | base64
+kubectl delete secret victortorreblanca-secret -n victortorreblanca --ignore-not-found
+kubectl create secret generic victortorreblanca-secret \
+  -n victortorreblanca \
+  --from-literal=productos-password='PASSWORD_DB_PRODUCTOS' \
+  --from-literal=pedidos-password='PASSWORD_DB_PEDIDOS'
 ```
-
-Luego reemplazar los valores de `productos-password` y `pedidos-password` en `01-VictorTorreblanca-secret.yml`.
 
 Aplicar manifiestos:
 
 ```bash
 kubectl apply -f k8s/00-VictorTorreblanca-namespace.yml
-kubectl apply -f k8s/01-VictorTorreblanca-secret.yml
 kubectl apply -f k8s/02-VictorTorreblanca-configmap.yml
 kubectl apply -f k8s/03-VictorTorreblanca-deployment.yml
 kubectl apply -f k8s/04-VictorTorreblanca-service.yml
@@ -163,6 +163,7 @@ kubectl describe configmap victortorreblanca-config -n victortorreblanca
 kubectl get deployments -n victortorreblanca
 kubectl get pods -n victortorreblanca -o wide
 kubectl get services -n victortorreblanca
+kubectl get endpoints -n victortorreblanca
 kubectl get all -n victortorreblanca
 ```
 
@@ -173,7 +174,7 @@ kubectl logs deployment/victortorreblanca-productos -n victortorreblanca
 kubectl logs deployment/victortorreblanca-pedidos -n victortorreblanca
 ```
 
-Los Services estan configurados como NodePort para poder probarlos desde la maquina local. Tambien se puede usar port-forward:
+Los Services estan configurados como NodePort con los puertos `30081` para productos y `30082` para pedidos. En el entorno local utilizado, los NodePort no respondieron directamente por `localhost`, por lo que la validacion funcional se realizo mediante `port-forward` hacia los Services. Esta prueba sigue correspondiendo a Kubernetes, porque los microservicios se ejecutan dentro de Pods y el trafico pasa por los Services.
 
 ```bash
 kubectl port-forward service/victortorreblanca-productos-service 9081:8081 -n victortorreblanca
@@ -205,10 +206,39 @@ curl -X POST http://localhost:9082/api/pedidos \
 
 ## 6. Puertos diferentes
 
-Se demuestra el uso de puertos diferentes mediante la variable `SERVER_PORT`:
+Se demuestra el uso de puertos diferentes mediante la variable `SERVER_PORT`. Primero se ejecutan los servicios con los puertos por defecto:
 
-- `ms-productos`: `SERVER_PORT=8081`
-- `ms-pedidos`: `SERVER_PORT=8082`
+```bash
+cd ms-productos
+SERVER_PORT=8081 DB_PASSWORD='PASSWORD_DB_PRODUCTOS' ./mvnw spring-boot:run
+```
+
+```bash
+cd ms-pedidos
+SERVER_PORT=8082 DB_PASSWORD='PASSWORD_DB_PEDIDOS' PRODUCTOS_SERVICE_URL=http://localhost:8081 ./mvnw spring-boot:run
+```
+
+Luego se detienen y se vuelven a ejecutar con puertos distintos:
+
+```bash
+cd ms-productos
+SERVER_PORT=8091 DB_PASSWORD='PASSWORD_DB_PRODUCTOS' ./mvnw spring-boot:run
+```
+
+```bash
+cd ms-pedidos
+SERVER_PORT=8092 DB_PASSWORD='PASSWORD_DB_PEDIDOS' PRODUCTOS_SERVICE_URL=http://localhost:8091 ./mvnw spring-boot:run
+```
+
+Pruebas:
+
+```bash
+curl http://localhost:8091/api/productos
+curl http://localhost:8092/api/pedidos
+curl -X POST http://localhost:8092/api/pedidos \
+  -H 'Content-Type: application/json' \
+  -d '{"productId":1,"quantity":1}'
+```
 
 En Kubernetes esos valores estan configurados como variables de entorno dentro de cada Deployment y se obtienen desde `02-VictorTorreblanca-configmap.yml`.
 
